@@ -2,6 +2,8 @@ import ir_datasets
 import bm25s
 import Stemmer
 
+# Initialize Snowball stemmer once to ensure identical morphological normalization
+# across indexing and query-time tokenization.
 stemmer = Stemmer.Stemmer("english")
 
 def run_lexical_baseline():
@@ -10,10 +12,11 @@ def run_lexical_baseline():
 
     doc_ids = []
     corpus_text = []
-    doc_map = {}  # Fast snippet lookup ke liye
+    doc_map = {}  # Fast snippet lookup for document text by doc_id
     
     for doc in dataset.docs_iter():
         doc_ids.append(doc.doc_id)
+        # Concatenation of title and abstract for full lexical surface coverage
         text = f"{doc.title} {doc.text}".strip()
         corpus_text.append(text)
         doc_map[doc.doc_id] = text
@@ -23,7 +26,7 @@ def run_lexical_baseline():
     print("Tokenizing corpus...")
     corpus_tokens = bm25s.tokenize(corpus_text, stopwords="en", stemmer=stemmer)
 
-    # corpus me doc_ids pass karo taaki results seedhe doc_id return kare
+    # Passing doc_ids directly to corpus maps retrieval indices to string IDs
     retriever = bm25s.BM25(corpus=doc_ids, k1=1.5, b=0.75)
     retriever.index(corpus_tokens)
     print("Indexing complete.")

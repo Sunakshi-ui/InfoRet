@@ -1,4 +1,10 @@
-# evaluate_both.py
+
+"""Comparative retrieval evaluation pipeline for BEIR SciFact.
+
+Evaluates sparse lexical retrieval (BM25 with Snowball stemming) against
+zero-shot dense semantic retrieval (all-MiniLM-L6-v2) across standard
+ranking metrics (Recall@k, MRR@k, nDCG@k) and CPU query latency.
+"""
 import time
 import numpy as np
 import ir_datasets
@@ -7,7 +13,8 @@ import Stemmer
 from sentence_transformers import SentenceTransformer
 from measure import recall_at_k, mrr_at_k, ndcg_at_k
 
-# 1. Dataset & QRELS
+
+# Evaluation config
 print("Loading SciFact...")
 ds = ir_datasets.load("beir/scifact/test")
 
@@ -15,12 +22,12 @@ DOCS = [{"id": d.doc_id, "text": f"{d.title} {d.text}".strip()} for d in ds.docs
 doc_ids = [d["id"] for d in DOCS]
 doc_texts = [d["text"] for d in DOCS]
 
-# Ground truth load karna
+# load
 qrels = {}
 for q in ds.qrels_iter():
     qrels.setdefault(q.query_id, {})[q.doc_id] = q.relevance
 
-# Sirf judged queries retain karo
+# Filter out unjudged queries to prevent zero-score distortion across arms
 queries = [{"id": q.query_id, "text": q.text} for q in ds.queries_iter() if qrels.get(q.query_id)]
 print(f"Loaded {len(DOCS)} docs, {len(queries)} evaluated queries.")
 
