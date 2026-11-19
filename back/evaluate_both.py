@@ -107,7 +107,24 @@ def search_hybrid_rrf(q_text: str, k: int = TOP_K) -> list[str]:
     ranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)[:k]
     return [did for did, _ in ranked]
 
+def search_weighted_rrf(
+    q_text: str, k: int = TOP_K, w_bm25: float = 0.70, w_dense: float = 0.30
+) -> list[str]:
+    """COGNI-inspired Asymmetric Weighted RRF (domain-inverted for scientific text)."""
+    bm25_hits = search_bm25_stemmed(q_text, k=RRF_POOL_K)
+    dense_hits = search_dense(q_text, k=RRF_POOL_K)
+
+    rrf_scores: dict[str, float] = {}
+    for rank, did in enumerate(bm25_hits, start=1):
+        rrf_scores[did] = rrf_scores.get(did, 0.0) + w_bm25 / (RRF_K + rank)
+    for rank, did in enumerate(dense_hits, start=1):
+        rrf_scores[did] = rrf_scores.get(did, 0.0) + w_dense / (RRF_K + rank)
+
+    ranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)[:k]
+    return [did for did, _ in ranked]
+
 evaluate_arm("BM25 (Unstemmed)", bm25_bm25_unstemmed)
 evaluate_arm("BM25 + Stemmer", search_bm25_stemmed)
 evaluate_arm("Dense (all-MiniLM-L6-v2)", dense_search)
 evaluate_arm("Hybrid RRF (BM25 + Dense)", search_hybrid_rrf)
+evaluate_arm("5. Weighted RRF (0.70 BM25 / 0.30 Dense)", search_weighted_rrf)
