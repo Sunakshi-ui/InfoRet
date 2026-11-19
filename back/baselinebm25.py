@@ -1,6 +1,8 @@
 import ir_datasets
 import bm25s
 import Stemmer
+import random
+
 
 # Initialize Snowball stemmer once to ensure identical morphological normalization
 # across indexing and query-time tokenization.
@@ -31,8 +33,11 @@ def run_lexical_baseline():
     retriever.index(corpus_tokens)
     print("Indexing complete.")
 
-    sample_queries = list(dataset.queries_iter())[:3]
 
+    all_queries = list(dataset.queries_iter())
+    sample_queries = random.sample(all_queries, 3)  
+
+    # sample_queries = list(dataset.queries_iter())[:3] 
     for q in sample_queries:
         query_text = q.text
         query_tokens = bm25s.tokenize(query_text, stemmer=stemmer)

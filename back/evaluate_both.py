@@ -5,6 +5,7 @@ Evaluates sparse lexical retrieval (BM25 with Snowball stemming) against
 zero-shot dense semantic retrieval (all-MiniLM-L6-v2) across standard
 ranking metrics (Recall@k, MRR@k, nDCG@k) and CPU query latency.
 """
+import os
 import time
 import numpy as np
 import ir_datasets
