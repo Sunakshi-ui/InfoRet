@@ -43,7 +43,15 @@ retriever.index(bm25s.tokenize(doc_texts, stemmer=stemmer, show_progress=False))
 # 3. Dense Embeddings (MiniLM)
 print("Encoding Docs with all-MiniLM-L6-v2 (CPU par ~2-3 mins lagenge)...")
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-doc_emb = model.encode(doc_texts, normalize_embeddings=True, show_progress_bar=True)
+CACHE_PATH = "doc_emb.npy"
+
+if os.path.exists(CACHE_PATH):
+    print("Loading cached embeddings from doc_emb.npy...")
+    doc_emb = np.load(CACHE_PATH)
+else:
+    print("Encoding Docs with all-MiniLM-L6-v2 (CPU par ~8 mins lagenge)...")
+    doc_emb = model.encode(doc_texts, normalize_embeddings=True, show_progress_bar=True)
+    np.save(CACHE_PATH, doc_emb)
 
 # 4. Evaluation Loop
 def evaluate_arm(name, retrieve_fn):

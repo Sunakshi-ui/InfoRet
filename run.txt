@@ -1,3 +1,18 @@
 
 Backend venv:
 source venv/bin/activate
+
+1. 
+python baselinebm25.py 
+test if it works. (query and fetching)
+2. 
+python cache_embeddings.py
+to create doc_emb.npy
+
+3. 
+python evaluate_both.py
+report. 
+
+4. 
+uvicorn api:app --reload --port 8000
+
